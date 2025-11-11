@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sierpinski Triangle – Step-by-step Chaos Game</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0b0e13;
+        --panel: #121722;
+        --ink: #e7ecf3;
+        --muted: #99a3b3;
+        --accent: #61dafb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(
+          1000px 600px at 60% 20%,
+          #0f1623 0%,
+          var(--bg) 60%
+        );
+        color: var(--ink);
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .wrap {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 12px;
+        padding: 14px;
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        font-size: 20px;
+        margin: 0;
+        letter-spacing: 0.3px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .stage {
+        background: var(--panel);
+        border: 1px solid #1c2330;
+        border-radius: 12px;
+        padding: 10px;
+        position: relative;
+        min-height: 300px;
+        display: grid;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #0e1320 0%, #0c101a 100%);
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        background: #0e1421;
+        border: 1px solid #1a2232;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+      .left,
+      .right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: 1px solid #1e2a3d;
+        background: #182235;
+        color: var(--ink);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: "Inter", system-ui, sans-serif;
+        font-weight: 500;
+      }
+      button:hover {
+        background: #1a2a44;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .pill {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: var(--muted);
+        font-size: 12px;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      .counter {
+        font-variant-numeric: tabular-nums;
+      }
+      .legend {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        font-size: 12px;
+        color: #b6c3d9;
+        background: rgba(10, 14, 22, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 6px 8px;
+        border-radius: 8px;
+        backdrop-filter: blur(6px);
+      }
+      .dot {
+        display: inline-block;
+        width: 0.75em;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        margin-right: 0.35em;
+        vertical-align: -0.05em;
+      }
+      .v1 {
+        background: #ff6b6b;
+      }
+      .v2 {
+        background: #ffd93d;
+      }
+      .v3 {
+        background: #6bffb8;
+      }
+      .pnt {
+        background: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Sierpinski Triangle – Chaos Game (Step Animation)</h1>
+        <div class="hint">
+          Click inside the triangle to choose the starting point.
+        </div>
+      </header>
+
+      <div class="stage">
+        <div class="legend">
+          <div><span class="dot v1"></span>Vertex A</div>
+          <div><span class="dot v2"></span>Vertex B</div>
+          <div><span class="dot v3"></span>Vertex C</div>
+          <div><span class="dot pnt"></span>Current / Trail</div>
+        </div>
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="left">
+          <button id="nextBtn" disabled>Next step ▶</button>
+          <button id="tenBtn" disabled>10 steps ▶▶</button>
+
+          <button id="hundredBtn" disabled>100 steps ▶▶▶</button>
+
+          <button id="resetBtn">Reset</button>
+          <span class="pill"
+            >Step <span class="counter" id="count">0</span></span
+          >
+        </div>
+        <div class="right">
+          <label class="pill">
+            <input
+              type="checkbox"
+              id="showOutline"
+              checked
+              style="vertical-align: -2px; margin-right: 6px"
+            />
+            Show triangle outline
+          </label>
+          <label class="pill">
+            Trail limit:
+            <input
+              id="trailLimit"
+              type="number"
+              min="100"
+              max="100000"
+              step="100"
+              value="5000"
+              style="
+                width: 90px;
+                margin-left: 6px;
+                background: transparent;
+                border: 0;
+                color: inherit;
+                outline: none;
+              "
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("canvas");
+        const nextBtn = document.getElementById("nextBtn");
+        const tenBtn = document.getElementById("tenBtn");
+        const hundredBtn = document.getElementById("hundredBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const countEl = document.getElementById("count");
+        const showOutlineEl = document.getElementById("showOutline");
+        const trailLimitEl = document.getElementById("trailLimit");
+
+        const DPR = () => window.devicePixelRatio || 1;
+
+        let ctx, W, H, padding;
+        let vertices = [];
+        let current = null;
+        let stepCount = 0;
+        let trail = [];
+        let isAnimating = false;
+
+        function resize() {
+          const rect = canvas.getBoundingClientRect();
+          const dpr = DPR();
+          W = Math.max(300, Math.floor(rect.width));
+          H = Math.max(300, Math.floor(rect.height));
+          canvas.width = Math.floor(W * dpr);
+          canvas.height = Math.floor(H * dpr);
+          canvas.style.width = W + "px";
+          canvas.style.height = H + "px";
+          ctx = canvas.getContext("2d");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          padding = Math.min(W, H) * 0.08;
+          computeVertices();
+          redraw();
+        }
+
+        function computeVertices() {
+          const size = Math.min(W, H) - 2 * padding;
+          const h = (size * Math.sqrt(3)) / 2;
+          const cx = W / 2;
+          const cy = H / 2 + h / 6;
+          const A = [cx, cy - (2 / 3) * h];
+          const B = [cx - size / 2, cy + h / 3];
+          const C = [cx + size / 2, cy + h / 3];
+          vertices = [A, B, C];
+        }
+
+        function clear() {
+          ctx.fillStyle = "#0c101a";
+          ctx.fillRect(0, 0, W, H);
+        }
+
+        function drawTriangleOutline() {
+          if (!showOutlineEl.checked) return;
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = "rgba(255,255,255,0.06)";
+          ctx.beginPath();
+          ctx.moveTo(...vertices[0]);
+          ctx.lineTo(...vertices[1]);
+          ctx.lineTo(...vertices[2]);
+          ctx.closePath();
+          ctx.stroke();
+
+          const edgeColors = ["#ff6b6b", "#ffd93d", "#6bffb8"];
+          for (let i = 0; i < 3; i++) {
+            ctx.strokeStyle = edgeColors[i];
+            ctx.beginPath();
+            ctx.moveTo(...vertices[i]);
+            ctx.lineTo(...vertices[(i + 1) % 3]);
+            ctx.stroke();
+          }
+
+          const dots = ["#ff6b6b", "#ffd93d", "#6bffb8"];
+          for (let i = 0; i < 3; i++) {
+            drawDot(vertices[i][0], vertices[i][1], 5, dots[i]);
+          }
+        }
+
+        function drawDot(x, y, r = 2, color = "#61dafb") {
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+
+        function redraw() {
+          clear();
+          drawTriangleOutline();
+          ctx.globalAlpha = 0.9;
+          for (let p of trail) drawDot(p[0], p[1], 1.5, "#61dafb");
+          ctx.globalAlpha = 1.0;
+          if (current) drawDot(current[0], current[1], 3, "#61dafb");
+        }
+
+        function insideTriangle(px, py) {
+          const [A, B, C] = vertices;
+          const v0 = [C[0] - A[0], C[1] - A[1]];
+          const v1 = [B[0] - A[0], B[1] - A[1]];
+          const v2 = [px - A[0], py - A[1]];
+          const dot00 = v0[0] * v0[0] + v0[1] * v0[1];
+          const dot01 = v0[0] * v1[0] + v0[1] * v1[1];
+          const dot02 = v0[0] * v2[0] + v0[1] * v2[1];
+          const dot11 = v1[0] * v1[0] + v1[1] * v1[1];
+          const dot12 = v1[0] * v2[0] + v1[1] * v2[1];
+          const invDen = 1 / (dot00 * dot11 - dot01 * dot01);
+          const u = (dot11 * dot02 - dot01 * dot12) * invDen;
+          const v = (dot00 * dot12 - dot01 * dot02) * invDen;
+          return u >= 0 && v >= 0 && u + v <= 1;
+        }
+
+        function setStartPoint(x, y) {
+          current = [x, y];
+          trail = [];
+          stepCount = 0;
+          countEl.textContent = "0";
+          nextBtn.disabled = false;
+          tenBtn.disabled = false;
+          hundredBtn.disabled = false;
+          redraw();
+        }
+
+        function animateOneStep(duration = 260) {
+          if (!current || isAnimating) return Promise.resolve();
+          isAnimating = true;
+
+          const targetVertex = vertices[Math.floor(Math.random() * 3)];
+          const start = [...current];
+          const end = [
+            (start[0] + targetVertex[0]) / 2,
+            (start[1] + targetVertex[1]) / 2,
+          ];
+
+          const t0 = performance.now();
+
+          return new Promise((resolve) => {
+            const tick = (now) => {
+              const t = Math.min(1, (now - t0) / duration);
+              const e = 1 - Math.pow(1 - t, 3);
+              const x = start[0] + (end[0] - start[0]) * e;
+              const y = start[1] + (end[1] - start[1]) * e;
+
+              redraw();
+              drawDot(x, y, 2.2, "#9ad7ff");
+
+              if (t < 1) requestAnimationFrame(tick);
+              else {
+                current = end;
+                trail.push(end);
+
+                const limit = Math.max(
+                  100,
+                  Math.min(100000, parseInt(trailLimitEl.value || "5000", 10))
+                );
+                if (trail.length > limit) trail.splice(0, trail.length - limit);
+
+                stepCount++;
+                countEl.textContent = stepCount;
+                isAnimating = false;
+                resolve();
+              }
+            };
+            requestAnimationFrame(tick);
+          });
+        }
+
+        async function animateNSteps(n) {
+          if (!current || isAnimating) return;
+
+          nextBtn.disabled = true;
+          tenBtn.disabled = true;
+          hundredBtn.disabled = true;
+
+          try {
+            for (let i = 0; i < n; i++) await animateOneStep(200);
+          } finally {
+            nextBtn.disabled = false;
+            tenBtn.disabled = false;
+            hundredBtn.disabled = false;
+          }
+        }
+
+        canvas.addEventListener("click", (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          if (!insideTriangle(x, y)) {
+            const centroid = [
+              (vertices[0][0] + vertices[1][0] + vertices[2][0]) / 3,
+              (vertices[0][1] + vertices[1][1] + vertices[2][1]) / 3,
+            ];
+            const px = (x + centroid[0]) / 2;
+            const py = (y + centroid[1]) / 2;
+            setStartPoint(px, py);
+          } else setStartPoint(x, y);
+        });
+
+        nextBtn.addEventListener("click", () => animateNSteps(1));
+        tenBtn.addEventListener("click", () => animateNSteps(10));
+        hundredBtn.addEventListener("click", () => animateNSteps(100));
+
+        resetBtn.addEventListener("click", () => {
+          current = null;
+          trail = [];
+          stepCount = 0;
+          nextBtn.disabled = true;
+          tenBtn.disabled = true;
+          hundredBtn.disabled = true;
+          countEl.textContent = "0";
+          redraw();
+        });
+
+        showOutlineEl.addEventListener("change", redraw);
+
+        trailLimitEl.addEventListener("change", () => {
+          const limit = Math.max(
+            100,
+            Math.min(100000, parseInt(trailLimitEl.value || "5000", 10))
+          );
+          if (trail.length > limit) trail.splice(0, trail.length - limit);
+          redraw();
+        });
+
+        window.addEventListener("resize", resize);
+        resize();
+      })();
+    </script>
+  </body>
+</html>
