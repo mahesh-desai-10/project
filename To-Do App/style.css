@@ -1,0 +1,77 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  /* background-color: red; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 700px;
+  height: 100vh;
+  /* border: 2px solid black; */
+  border-radius: 5px;
+  padding: 10px;
+
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  flex-direction: column;
+  /* text-align: center; */
+}
+
+.heading {
+  font-size: x-large;
+  margin: 10px;
+}
+
+.inputTask {
+  width: 60%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.addBtn {
+  font-size: large;
+  padding: 5px;
+  width: 100px;
+  cursor: pointer;
+}
+
+#inputBox {
+  height: 40px;
+  width: 300px;
+  padding-left: 5px;
+  font-size: large;
+}
+
+.tasks {
+  /* border: 2px solid black; */
+  border-radius: 5px;
+  width: 40%;
+  font-size: large;
+  margin-top: 20px;
+  padding: 40px;
+  user-select: none;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.error::placeholder {
+  color: red;
+}
+
+input {
+  color: black;
+}
